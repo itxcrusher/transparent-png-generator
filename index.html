@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transparent PNG Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* A subtle checkerboard pattern for the preview background to visualize transparency */
+        .checkerboard {
+            background-image:
+                linear-gradient(45deg, #ccc 25%, transparent 25%),
+                linear-gradient(135deg, #ccc 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #ccc 75%),
+                linear-gradient(135deg, transparent 75%, #ccc 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 0, 10px -10px, 0px 10px;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 flex items-center justify-center min-h-full p-4 antialiased">
+    <div class="w-full max-w-2xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white">Transparent PNG Generator</h1>
+            <p class="text-slate-400 mt-2">Create a blank, transparent PNG of any dimension instantly.</p>
+        </header>
+
+        <main class="bg-slate-800 p-8 rounded-2xl shadow-2xl space-y-8 border border-slate-700">
+            <!-- Dimension Inputs Section -->
+            <div>
+                <h2 class="text-lg font-semibold text-white mb-4">Custom Dimensions</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                    <div class="relative">
+                        <label for="width" class="block text-sm font-medium text-slate-400 mb-1">Width</label>
+                        <input type="number" id="width" value="1920" min="1" class="w-full bg-slate-700 text-white rounded-lg px-4 py-2 border-2 border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors" placeholder="e.g., 1920">
+                    </div>
+                    <div class="relative">
+                        <label for="height" class="block text-sm font-medium text-slate-400 mb-1">Height</label>
+                        <input type="number" id="height" value="1080" min="1" class="w-full bg-slate-700 text-white rounded-lg px-4 py-2 border-2 border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors" placeholder="e.g., 1080">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Presets Section -->
+            <div>
+                <h2 class="text-lg font-semibold text-white mb-4">Or Use a Preset</h2>
+                <div id="presets-container" class="flex flex-wrap gap-3">
+                    <button data-w="1920" data-h="1080" class="preset-btn flex-grow bg-slate-700 hover:bg-sky-600 text-slate-200 font-medium py-2 px-4 rounded-lg transition-colors">16:9 (HD)</button>
+                    <button data-w="1024" data-h="768" class="preset-btn flex-grow bg-slate-700 hover:bg-sky-600 text-slate-200 font-medium py-2 px-4 rounded-lg transition-colors">4:3 (Standard)</button>
+                    <button data-w="1080" data-h="1080" class="preset-btn flex-grow bg-slate-700 hover:bg-sky-600 text-slate-200 font-medium py-2 px-4 rounded-lg transition-colors">1:1 (Square)</button>
+                    <button data-w="1080" data-h="1920" class="preset-btn flex-grow bg-slate-700 hover:bg-sky-600 text-slate-200 font-medium py-2 px-4 rounded-lg transition-colors">9:16 (Story)</button>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            <div>
+                <h2 class="text-lg font-semibold text-white mb-4">Preview</h2>
+                <div class="w-full h-64 bg-slate-900/50 rounded-lg flex items-center justify-center p-4 checkerboard transition-all duration-300">
+                    <div id="preview-box" class="bg-transparent border-2 border-dashed border-sky-400 rounded-md relative shadow-lg" style="width: 100%; height: 100%;">
+                        <span id="preview-dimensions" class="absolute -top-7 right-0 text-sm font-mono bg-sky-500 text-white px-2 py-0.5 rounded-md">1920 x 1080</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Button -->
+            <div class="pt-4">
+                <button id="download-btn" class="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold text-lg py-4 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Download PNG
+                </button>
+                 <p id="error-message" class="text-red-400 text-center mt-4 h-5"></p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // DOM element references
+        const widthInput = document.getElementById('width');
+        const heightInput = document.getElementById('height');
+        const presetsContainer = document.getElementById('presets-container');
+        const previewBox = document.getElementById('preview-box');
+        const previewDimensions = document.getElementById('preview-dimensions');
+        const downloadBtn = document.getElementById('download-btn');
+        const errorMessage = document.getElementById('error-message');
+
+        const MAX_DIMENSION = 16384; // Common browser canvas limit
+
+        /**
+         * Updates the visual preview and dimension text based on current input values.
+         */
+        function updatePreview() {
+            const width = parseInt(widthInput.value, 10);
+            const height = parseInt(heightInput.value, 10);
+
+            // Validate inputs
+            const isValid = validateInputs(width, height);
+            downloadBtn.disabled = !isValid;
+            downloadBtn.classList.toggle('opacity-50', !isValid);
+            downloadBtn.classList.toggle('cursor-not-allowed', !isValid);
+
+            if (!isValid) {
+                 previewBox.style.aspectRatio = 'auto'; // Reset aspect ratio if invalid
+                return;
+            }
+
+            // Update preview text
+            previewDimensions.textContent = `${width} x ${height}`;
+
+            // Update preview box aspect ratio
+            previewBox.style.aspectRatio = `${width} / ${height}`;
+        }
+        
+        /**
+         * Validates the width and height values.
+         * @param {number} width - The width value.
+         * @param {number} height - The height value.
+         * @returns {boolean} - True if the inputs are valid, false otherwise.
+         */
+        function validateInputs(width, height){
+            if (isNaN(width) || isNaN(height) || width < 1 || height < 1) {
+                errorMessage.textContent = 'Dimensions must be at least 1x1.';
+                return false;
+            }
+            if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+                errorMessage.textContent = `Dimensions cannot exceed ${MAX_DIMENSION}px.`;
+                return false;
+            }
+            errorMessage.textContent = '';
+            return true;
+        }
+
+        /**
+         * Sets the width and height input values and updates the preview.
+         * @param {number} w - The width to set.
+         * @param {number} h - The height to set.
+         */
+        function setDimensions(w, h) {
+            widthInput.value = w;
+            heightInput.value = h;
+            updatePreview();
+        }
+
+        /**
+         * Creates a transparent PNG and triggers a download.
+         */
+        function downloadImage() {
+            const width = parseInt(widthInput.value, 10);
+            const height = parseInt(heightInput.value, 10);
+            
+            if (!validateInputs(width, height)) return;
+
+            // Create an offscreen canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+
+            // The canvas is transparent by default, so no need to draw anything.
+
+            // Create a link element to trigger the download
+            const link = document.createElement('a');
+            link.download = `transparent_${width}x${height}.png`;
+            link.href = canvas.toDataURL('image/png');
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- Event Listeners ---
+
+        // Listen for changes in the input fields
+        widthInput.addEventListener('input', updatePreview);
+        heightInput.addEventListener('input', updatePreview);
+
+        // Listen for clicks on the preset buttons
+        presetsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('preset-btn')) {
+                const w = e.target.dataset.w;
+                const h = e.target.dataset.h;
+                setDimensions(w, h);
+            }
+        });
+
+        // Listen for clicks on the download button
+        downloadBtn.addEventListener('click', downloadImage);
+
+        // --- Initial setup ---
+        // Run on page load to set initial state
+        document.addEventListener('DOMContentLoaded', updatePreview);
+    </script>
+</body>
+</html>
